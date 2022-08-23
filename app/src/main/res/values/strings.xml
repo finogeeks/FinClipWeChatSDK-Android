@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">FinClipWeChatSDK</string>
+
+    <string name="unzip_assets_framework">解压assets目录基础库</string>
+    <string name="clear_framework">清除基础库</string>
+    <string name="finish_all_running_applets">结束所有运行的小程序</string>
+    <string name="clear_all_applets">清除所有小程序</string>
+    <string name="scan_start_applet">扫码打开小程序</string>
+    <string name="test_applets">测试小程序</string>
+    <string name="operate_success">操作成功</string>
+    <string name="operate_failure">操作失败</string>
+</resources>

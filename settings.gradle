@@ -1,0 +1,3 @@
+rootProject.name = "FinClipWeChatSDK"
+include ':app'
+include ':wechat'

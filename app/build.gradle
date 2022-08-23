@@ -1,0 +1,273 @@
+import java.util.concurrent.TimeUnit
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+/**
+ * 以git tag的数量作为其版本号
+ * @return tag的数量
+ */
+def getAppVersionCode() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'tag', '--list'
+        standardOutput = stdout
+    }
+    return stdout.toString().split("\n").size()
+}
+
+/**
+ * 从git tag中获取应用的版本名称
+ * @return git tag的名称
+ */
+def getAppVersionName() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--abbrev=0', '--tags'
+        standardOutput = stdout
+    }
+    return stdout.toString().replaceAll("[\\t\\n\\r]", "")
+}
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.finogeeks.finosprite"
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+
+        versionCode getAppVersionCode()
+        versionName getAppVersionName()
+        multiDexEnabled true
+
+        ndk {
+            abiFilters "x86", "armeabi", 'armeabi-v7a'
+        }
+
+        buildConfigField "String", "API_PREFIX", "\"/api/v1/mop/\""
+
+        resValue "string", "wechat_sdk_app_id", "wx85663af68a0cbbc8"
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias "FinoSprite"
+            keyPassword "fino123456"
+            storeFile file("../keystore/FinoSprite.jks")
+            storePassword "fino123456"
+        }
+        release {
+            keyAlias "FinoSprite"
+            keyPassword "fino123456"
+            storeFile file("../keystore/FinoSprite.jks")
+            storePassword "fino123456"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "default"
+    productFlavors {
+        mop {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        mop_b {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop-b.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop-b.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        mop_b_private {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop-b-private.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop-b-private.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        uat {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://mp.finogeeks.com\""
+            buildConfigField "String", "APM_URL", "\"https://mp.finogeeks.com\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        uat_offline {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://mp.finogeeks.com\""
+            buildConfigField "String", "APM_URL", "\"https://mp.finogeeks.com\""
+            buildConfigField "String", "SDK_KEY", "\"QGwso19BOQqKPFrUE8782r4V4W8Uxd/gMgmH8Hg1bGQ=\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        finchatPrivate {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop-private.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop-private.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        fdep {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://open.fdep.cn\""
+            buildConfigField "String", "APM_URL", "\"https://open.fdep.cn\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        hx {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://miniprogramdev.hx168.com.cn:40000\""
+            buildConfigField "String", "APM_URL", "\"https://miniprogramdev.hx168.com.cn:40000\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        swan {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://swan.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://swan.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        taisiting {
+            // 实际上为testing, 但是AS不允许包含test的字符串作为flavor的名字
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finclip-testing.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finclip-testing.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        mlxy {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"http://47.74.176.107:8000\""
+            buildConfigField "String", "APM_URL", "\"http://47.74.176.107:8000\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        kunlun {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://dev-app.kunlunhealth.com.cn\""
+            buildConfigField "String", "APM_URL", "\"https://dev-app.kunlunhealth.com.cn\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+
+        yingda {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"http://172.16.90.39:30000\""
+            buildConfigField "String", "APM_URL", "\"http://172.16.90.39:30000\""
+            buildConfigField "String", "SDK_KEY", "\"qHSBIXkrVdxLUHKxF+mv+UwUlHkE3c4vPlAeZfdWRjA=\""
+            buildConfigField "String", "SDK_SECRET", "\"6151770d195d9f70\""
+        }
+
+        saas {
+            dimension "default"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop-saas.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop-saas.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+            buildConfigField "String", "SDK_FINGERPRINT", "\"A7DA0F6165CD31F164C9649F07DBB34ACA998C7D63FDE84EEA96EDB66EC79A45\""
+        }
+        pufa {
+            dimension "default"
+//            buildConfigField "String", "API_URL", "\"http://172.30.119.31:8080\""
+            buildConfigField "String", "API_URL", "\"https://mop-pufa-gateway.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://mop-pufa-gateway.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAfJ/xujwNfM6OvvEqQyH4igA\""
+            buildConfigField "String", "SDK_SECRET", "\"703b9026be3d6bc5\""
+        }
+        /*dongwu {
+            dimension "default"
+            applicationId "com.dwzq.market"
+            buildConfigField "String", "API_URL", "\"https://test.showcai.com.cn:41081\""
+            buildConfigField "String", "APM_URL", "\"https://test.showcai.com.cn:41081\""
+            buildConfigField "String", "SDK_KEY", "\"Jvy9drW0H1hSFFII/Au4i84vdd1KRzli7euqgItoZfE=\""
+            buildConfigField "String", "SDK_SECRET", "\"51a65d3332b62c62\""
+        }*/
+        huaxi {
+            dimension "default"
+            applicationId "com.fino.hx168.newma"
+            buildConfigField "String", "API_URL", "\"http://10.0.209.65:30000\""
+            buildConfigField "String", "APM_URL", "\"http://10.0.209.65:30000\""
+            buildConfigField "String", "SDK_KEY", "\"wjOkKXgzWoBXxznvNMxeEsjsuE5qA6yVzRSlN9LM5A4A\""
+            buildConfigField "String", "SDK_SECRET", "\"1e3087989b315c4e\""
+        }
+
+        apioverride {
+            dimension "default"
+            applicationId "com.finogeeks.api.demo"
+            buildConfigField "String", "API_URL", "\"https://finchat-mop-b.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finchat-mop-b.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAeYyCimu/ETF/tRP4QCeu5igA4x+JWh7hhNS5aO52BFs\""
+            buildConfigField "String", "SDK_SECRET", "\"d82c210482fb650d\""
+        }
+
+        mwc {
+            dimension "default"
+            applicationId "com.finogeeks.api.demo"
+            buildConfigField "String", "API_URL", "\"https://finclip-testing.finogeeks.club\""
+            buildConfigField "String", "APM_URL", "\"https://finclip-testing.finogeeks.club\""
+            buildConfigField "String", "SDK_KEY", "\"22LyZEib0gLTQdU3MUauAeYyCimu/ETF/tRP4QCeu5igA4x+JWh7hhNS5aO52BFs\""
+            buildConfigField "String", "SDK_SECRET", "\"2a8b2bd127d2a313\""
+        }
+    }
+
+    packagingOptions {
+        // libsdkcore.so是被加固过的，不能被压缩，否则加载动态库时会报错
+        doNotStrip "*/x86/libsdkcore.so"
+        doNotStrip "*/x86_64/libsdkcore.so"
+        doNotStrip "*/armeabi/libsdkcore.so"
+        doNotStrip "*/armeabi-v7a/libsdkcore.so"
+        doNotStrip "*/arm64-v8a/libsdkcore.so"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+configurations.all {
+    // 变化模块的缓存过期时间
+    resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
+    // 动态版本的缓存过期时间
+    resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    def deps = rootProject.ext.dependencies
+
+    // finapplet
+    implementation deps.finapplet
+
+    implementation project(':wechat')
+
+    implementation deps.kotlin
+
+//    debugImplementation deps.leak_canary
+
+    implementation deps.constraintlayout
+
+    implementation deps.bga_qrcode_zbar
+
+    implementation deps.utilcode
+}
