@@ -47,6 +47,8 @@ android {
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
         }
+
+        resValue "string", "wechat_sdk_app_id", ""
     }
     buildTypes {
         debug {
@@ -89,6 +91,9 @@ dependencies {
 
     // Kotlin
     implementation deps.kotlin
+
+    // WeChat
+    implementation deps.wechat
 }
 
 uploadArchives {
