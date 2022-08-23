@@ -25,17 +25,17 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }
         maven {
-            url rootProject.ext.nexus_applet.url
+            url "https://gradle.finogeeks.club/repository/finogeeks/"
             credentials {
-                username rootProject.ext.nexus_applet.username
-                password rootProject.ext.nexus_applet.password
+                username "applet"
+                password "123321"
             }
         }
         maven {
-            url rootProject.ext.nexus_finogeeks.url
+            url "https://gradle.finogeeks.club/repository/applet/"
             credentials {
-                username rootProject.ext.nexus_finogeeks.username
-                password rootProject.ext.nexus_finogeeks.password
+                username "applet"
+                password "123321"
             }
         }
     }
