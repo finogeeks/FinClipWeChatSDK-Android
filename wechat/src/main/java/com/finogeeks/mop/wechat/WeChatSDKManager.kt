@@ -17,8 +17,7 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-
-class WeChatSDKManager private constructor() : IWXAPIEventHandler {
+internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
 
     companion object {
         @JvmStatic

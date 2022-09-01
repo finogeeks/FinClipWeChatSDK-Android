@@ -5,7 +5,7 @@ import com.finogeeks.lib.applet.interfaces.FinCallback
 import com.finogeeks.lib.applet.sdk.api.IAppletProcessApiManager
 import com.google.gson.Gson
 
-class WeChatMainProcessCallHandler : IAppletProcessApiManager.MainProcessCallHandler {
+internal class WeChatMainProcessCallHandler : IAppletProcessApiManager.MainProcessCallHandler {
 
     companion object {
         const val API_NAME_GET_FIN_APP_INFO = "getFinAppInfo"
