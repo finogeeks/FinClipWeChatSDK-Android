@@ -1,41 +1,30 @@
-package com.finogeeks.mop.wechat
+package com.finogeeks.mop.wechat.open_type_handler
 
 import android.graphics.Bitmap
 import android.os.Bundle
 import com.finogeeks.lib.applet.client.FinAppClient
 import com.finogeeks.lib.applet.client.FinAppInfo
 import com.finogeeks.lib.applet.interfaces.FinCallback
-import com.finogeeks.lib.applet.page.view.moremenu.MoreMenuItem
-import com.finogeeks.lib.applet.rest.model.GrayAppletVersionConfig
 import com.finogeeks.lib.applet.sdk.api.IAppletHandler
+import com.finogeeks.lib.applet.sdk.api.IAppletOpenTypeHandler
+import com.finogeeks.mop.wechat.WeChatMainProcessCallHandler
+import com.finogeeks.mop.wechat.WeChatSDKManager
 import com.google.gson.Gson
 import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
 import org.json.JSONObject
 
-/**
- * 由于 getPhoneNumber 是在主进程的 IAppletHandler 中被调用的，
- * 因此本SDK需要覆盖宿主APP的 IAppletHandler 实现
- */
-class WeChatAppletHandler : IAppletHandler {
+internal class WeChatOpenTypeHandler : IAppletOpenTypeHandler {
 
     override fun chooseAvatar(callback: IAppletHandler.IAppletCallback) {
-
+        WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler?.chooseAvatar(callback)
     }
 
     override fun contact(json: JSONObject): Boolean {
-        return false
+        return WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler?.contact(json) ?: false
     }
 
     override fun feedback(bundle: Bundle): Boolean {
-        return false
-    }
-
-    override fun getGrayAppletVersionConfigs(appId: String): List<GrayAppletVersionConfig>? {
-        return null
-    }
-
-    override fun getJSSDKConfig(json: JSONObject, callback: IAppletHandler.IAppletCallback) {
-
+        return WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler?.feedback(bundle) ?: false
     }
 
     override fun getPhoneNumber(callback: IAppletHandler.IAppletCallback) {
@@ -94,35 +83,9 @@ class WeChatAppletHandler : IAppletHandler {
             })
     }
 
-    override fun getRegisteredMoreMenuItems(appId: String): List<MoreMenuItem>? {
-        return null
-    }
-
-    override fun getUserInfo(): Map<String, String>? {
-        return null
-    }
-
-    override fun getWebViewCookie(appId: String): Map<String, String>? {
-        return null
-    }
-
     override fun launchApp(appParameter: String?): Boolean {
-        return false
-    }
-
-    override fun onNavigationBarCloseButtonClicked(appId: String) {
-
-    }
-
-    override fun onRegisteredMoreMenuItemClicked(
-        appId: String,
-        path: String,
-        menuItemId: String,
-        appInfo: String?,
-        bitmap: Bitmap?,
-        callback: IAppletHandler.IAppletCallback
-    ) {
-
+        return WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler?.launchApp(appParameter)
+            ?: false
     }
 
     override fun shareAppMessage(
@@ -130,6 +93,10 @@ class WeChatAppletHandler : IAppletHandler {
         bitmap: Bitmap?,
         callback: IAppletHandler.IAppletCallback
     ) {
-
+        WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler?.shareAppMessage(
+            appInfo,
+            bitmap,
+            callback
+        )
     }
 }
