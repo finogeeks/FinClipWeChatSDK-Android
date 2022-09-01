@@ -27,7 +27,7 @@ class WeChatPlugin(activity: Activity) : BaseApi(activity) {
     init {
         // WeChatPlugin 将会在小程序进程里构造，此时设置 WeChatMainProcessCallHandler，
         // 使主进程可以通过它与小程序进程交互，在此SDK中主要用于主进程能够拿到 FinAppInfo
-        FinAppProcessClient.appletProcessApiManager.setMainProcessCallHandler(
+        FinAppProcessClient.appletProcessApiManager.setWeChatSDKMainProcessCallHandler(
             WeChatMainProcessCallHandler()
         )
     }

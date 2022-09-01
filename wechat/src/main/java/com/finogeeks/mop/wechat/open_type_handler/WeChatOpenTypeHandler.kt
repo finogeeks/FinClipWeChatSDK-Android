@@ -33,10 +33,12 @@ internal class WeChatOpenTypeHandler : IAppletOpenTypeHandler {
             callback.onFailure()
             return
         }
+        val paramJson = JSONObject()
+        paramJson.put("apiName", WeChatMainProcessCallHandler.API_NAME_GET_FIN_APP_INFO)
         FinAppClient.appletApiManager.callInAppletProcess(
             currentAppletId,
-            WeChatMainProcessCallHandler.API_NAME_GET_FIN_APP_INFO,
-            "",
+            WeChatMainProcessCallHandler.CALL_NAME,
+            paramJson.toString(),
             object : FinCallback<String> {
                 override fun onSuccess(p0: String?) {
                     if (p0.isNullOrEmpty()) {
