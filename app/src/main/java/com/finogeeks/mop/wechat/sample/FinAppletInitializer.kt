@@ -12,7 +12,6 @@ import com.finogeeks.lib.applet.client.FinStoreConfig
 import com.finogeeks.lib.applet.interfaces.FinCallback
 import com.finogeeks.lib.applet.sdk.api.IAppletApiManager
 import com.finogeeks.lib.applet.sdk.api.IAppletLifecycleCallback
-import com.finogeeks.mop.wechat.apis.WeChatPlugin
 import com.finogeeks.mop.wechat.sample.api.AppletApi
 import com.finogeeks.mop.wechat.sample.util.longToastOnUiThread
 import com.finogeeks.mop.wechat.sample.util.toastOnUiThread
