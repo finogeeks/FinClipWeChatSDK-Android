@@ -100,7 +100,7 @@ uploadArchives {
     configuration = configurations.archives
     repositories {
         mavenDeployer {
-            def nexus = rootProject.ext.nexus_finogeeks
+            def nexus = rootProject.ext.nexus_applet
             repository(url: nexus.url) {
                 authentication(userName: nexus.username, password: nexus.password)
             }
