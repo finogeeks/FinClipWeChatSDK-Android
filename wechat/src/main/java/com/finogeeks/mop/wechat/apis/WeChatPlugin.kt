@@ -5,11 +5,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import com.finogeeks.lib.applet.api.BaseApi
+import com.finogeeks.lib.applet.api.AppletApi
 import com.finogeeks.lib.applet.api.apiFail
+import com.finogeeks.lib.applet.api.authDeny
 import com.finogeeks.lib.applet.client.FinAppProcessClient
 import com.finogeeks.lib.applet.interfaces.ICallback
 import com.finogeeks.lib.applet.main.FinAppHomeActivity
+import com.finogeeks.lib.applet.modules.applet_scope.AppletScopeManager
+import com.finogeeks.lib.applet.modules.applet_scope.ScopeRequest
+import com.finogeeks.lib.applet.modules.applet_scope.bean.AppletScopeBean
 import com.finogeeks.mop.wechat.BuildConfig
 import com.finogeeks.mop.wechat.WeChatMainProcessCallHandler
 import com.finogeeks.mop.wechat.WeChatSDKManager
@@ -22,7 +26,7 @@ import org.json.JSONObject
 /**
  * 微信相关API
  */
-class WeChatPlugin(activity: Activity) : BaseApi(activity) {
+class WeChatPlugin(activity: Activity) : AppletApi(activity) {
 
     init {
         // WeChatPlugin 将会在小程序进程里构造，此时设置 WeChatMainProcessCallHandler，
@@ -87,7 +91,7 @@ class WeChatPlugin(activity: Activity) : BaseApi(activity) {
         )
     }
 
-    override fun invoke(event: String, param: JSONObject, callback: ICallback) {
+    override fun invoke(appId: String, event: String, param: JSONObject, callback: ICallback) {
         val activity = context as FinAppHomeActivity
         val finAppInfo = activity.mFinAppInfo
         val appletType = when (finAppInfo.appType) {
@@ -101,8 +105,7 @@ class WeChatPlugin(activity: Activity) : BaseApi(activity) {
             return
         }
         when (event) {
-            API_WECHAT_LOGIN,
-            API_WECHAT_GET_USER_PROFILE -> {
+            API_WECHAT_LOGIN -> {
                 if (wechatLoginInfo.wechatOriginId.isNullOrEmpty() ||
                     wechatLoginInfo.profileUrl.isNullOrEmpty()
                 ) {
@@ -115,6 +118,31 @@ class WeChatPlugin(activity: Activity) : BaseApi(activity) {
                     appletType,
                     activity.mFinAppInfo.wechatLoginInfo
                 )
+            }
+            API_WECHAT_GET_USER_PROFILE -> {
+                val scopeRequest = ScopeRequest()
+                scopeRequest.addScope(context, AppletScopeBean.SCOPE_USERINFO)
+                scopeRequest.alwaysRequest = true
+                val scopeManager = AppletScopeManager(context, appId)
+                scopeManager.requestScope(scopeRequest) { allow ->
+                    if (allow) {
+                        if (wechatLoginInfo.wechatOriginId.isNullOrEmpty() ||
+                            wechatLoginInfo.profileUrl.isNullOrEmpty()
+                        ) {
+                            callback.onFail(apiFail(event))
+                            return@requestScope
+                        }
+                        currentEvent = event
+                        currentCallback = callback
+                        weChatSDKManager.launchGetProfileWxMiniProgram(
+                            appletType,
+                            activity.mFinAppInfo.wechatLoginInfo
+                        )
+                    } else {
+                        callback.authDeny(event)
+                    }
+                }
+
             }
             API_WECHAT_REQUEST_PAYMENT -> {
                 if (wechatLoginInfo.wechatOriginId.isNullOrEmpty() ||
@@ -132,6 +160,10 @@ class WeChatPlugin(activity: Activity) : BaseApi(activity) {
                 )
             }
         }
+    }
+
+    override fun invoke(event: String, param: JSONObject, callback: ICallback) {
+
     }
 
     /**
