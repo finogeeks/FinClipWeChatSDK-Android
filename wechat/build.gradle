@@ -40,7 +40,7 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
 
         versionCode getAppVersionCode()
-        versionName getAppVersionName()
+        versionName "2.38.10-alpha20221207v02"
 
         consumerProguardFiles "consumer-rules.pro"
 
@@ -100,12 +100,12 @@ uploadArchives {
     configuration = configurations.archives
     repositories {
         mavenDeployer {
-            def nexus = rootProject.ext.nexus_applet
+            def nexus = rootProject.ext.nexus_finogeeks
             repository(url: nexus.url) {
                 authentication(userName: nexus.username, password: nexus.password)
             }
             pom.project {
-                version getAppVersionName()
+                version "2.38.10-alpha20221207v02"
                 artifactId "wechat"
                 groupId "com.finogeeks.mop"
                 packaging "aar"
