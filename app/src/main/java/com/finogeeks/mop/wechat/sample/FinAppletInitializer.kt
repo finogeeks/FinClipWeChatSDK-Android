@@ -179,6 +179,7 @@ class FinAppletInitializer(private val application: Application) {
             .setCustomWebViewUserAgent("android 7.1.1")
             .setUserId("13286836062")
             .setMinAndroidSdkVersion(Build.VERSION_CODES.LOLLIPOP)
+            .setEnableAppletDebug(true)
             .build()
 
         FinAppClient.init(application, config, object : FinCallback<Any?> {
