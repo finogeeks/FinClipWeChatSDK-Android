@@ -30,7 +30,7 @@ ext {
             recyclerview    : "23.2.0",
             constraintlayout: "1.1.3",
 
-            finapplet       : "2.39.0-alpha20221209v11",
+            finapplet       : "2.39.0-beta20221209v12",
 
             leak_canary     : "2.7",
 
