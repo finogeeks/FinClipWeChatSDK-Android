@@ -1,19 +1,19 @@
 package com.finogeeks.mop.wechat.utils
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
+import com.finogeeks.lib.applet.client.FinAppClient
+import com.finogeeks.lib.applet.client.FinAppProcessClient
+import com.finogeeks.lib.applet.main.FinAppHomeActivity
 
 object WeChatAppletProcessUtils {
     fun moveAppletProcessToFront(context: Context, activityName: String) {
-        val moveToTopIntent = Intent(context, Class.forName(activityName))
-        moveToTopIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            moveToTopIntent,
-            0
-        )
-        pendingIntent.send()
+        if (FinAppClient.isFinAppProcess(context.applicationContext)) {
+            val activity = FinAppProcessClient.appletProcessActivity as? FinAppHomeActivity
+                ?: return
+            activity.moveTaskToFront()
+        } else {
+            val currentAppletId = FinAppClient.appletApiManager.getCurrentAppletId() ?: return
+            FinAppClient.appletApiManager.moveTaskToFront(currentAppletId)
+        }
     }
 }
