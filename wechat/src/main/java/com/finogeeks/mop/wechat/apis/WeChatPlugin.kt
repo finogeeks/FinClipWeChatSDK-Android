@@ -109,7 +109,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
             }
             API_WECHAT_GET_USER_PROFILE -> {
                 val scopeRequest = ScopeRequest()
-                scopeRequest.addScope(context, AppletScopeBean.SCOPE_USERINFO)
+                scopeRequest.addScope(AppletScopeBean.SCOPE_USERINFO)
                 scopeRequest.alwaysRequest = true
                 val scopeManager = AppletScopeManager(context, appId)
                 scopeManager.requestScope(scopeRequest) { allow ->
