@@ -6,7 +6,7 @@ import com.finogeeks.lib.applet.client.FinAppProcessClient
 import com.finogeeks.lib.applet.main.FinAppHomeActivity
 
 object WeChatAppletProcessUtils {
-    fun moveAppletProcessToFront(context: Context, activityName: String) {
+    fun moveAppletProcessToFront(context: Context) {
         if (FinAppClient.isFinAppProcess(context.applicationContext)) {
             val activity = FinAppProcessClient.appletProcessActivity as? FinAppHomeActivity
                 ?: return

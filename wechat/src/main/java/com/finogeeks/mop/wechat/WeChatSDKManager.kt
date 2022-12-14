@@ -122,12 +122,9 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                     appletHandlerCallback?.onFailure()
                 } else {
                     // 将小程序移至前台
-                    val activityName = FinAppClient.appletApiManager
-                        .getAppletActivityName(currentAppletId)
-                        ?.substringBefore("@") ?: ""
                     val context = contextRef.get()
-                    if (activityName.isNotEmpty() && context != null) {
-                        WeChatAppletProcessUtils.moveAppletProcessToFront(context, activityName)
+                    if (context != null) {
+                        WeChatAppletProcessUtils.moveAppletProcessToFront(context)
                         if (extraData.contains(":fail")) {
                             appletHandlerCallback?.onFailure()
                         } else {

@@ -51,10 +51,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
             override fun onReceive(context: Context, intent: Intent) {
                 currentCallback?.let { callback ->
                     currentEvent?.let { event ->
-                        WeChatAppletProcessUtils.moveAppletProcessToFront(
-                            activity,
-                            activity.javaClass.name
-                        )
+                        WeChatAppletProcessUtils.moveAppletProcessToFront(activity)
                         handleIntentResult(event, callback, intent)
                         currentCallback = null
                         currentEvent = null
@@ -109,7 +106,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
             }
             API_WECHAT_GET_USER_PROFILE -> {
                 val scopeRequest = ScopeRequest()
-                scopeRequest.addScope(AppletScopeBean.SCOPE_USERINFO)
+                scopeRequest.addScope(context, AppletScopeBean.SCOPE_USERINFO)
                 scopeRequest.alwaysRequest = true
                 val scopeManager = AppletScopeManager(context, appId)
                 scopeManager.requestScope(scopeRequest) { allow ->
