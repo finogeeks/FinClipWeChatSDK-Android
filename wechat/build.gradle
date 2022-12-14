@@ -40,7 +40,7 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
 
         versionCode getAppVersionCode()
-        versionName "2.39.0-alpha20221209v11"
+        versionName getAppVersionName()
 
         consumerProguardFiles "consumer-rules.pro"
 
@@ -105,7 +105,7 @@ uploadArchives {
                 authentication(userName: nexus.username, password: nexus.password)
             }
             pom.project {
-                version "2.39.0-alpha20221209v11"
+                version getAppVersionName()
                 artifactId "wechat"
                 groupId "com.finogeeks.mop"
                 packaging "aar"
