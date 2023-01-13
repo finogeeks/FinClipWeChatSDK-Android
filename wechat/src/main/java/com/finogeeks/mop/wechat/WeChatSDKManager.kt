@@ -115,18 +115,16 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
             val launchMiniProResp = resp as WXLaunchMiniProgram.Resp
             val extraData = launchMiniProResp.extMsg
             if (appletHandlerCallback != null) {
-                // 直接在主进程使用 appletHandlerCallback 进行跨进程回调
+                // 当 appletHandlerCallback 不为 null 时，说明是通过 button-type 调用的 getPhoneNumber，
+                // 此时执行进程为主进程，直接使用 appletHandlerCallback 进行回调
                 val currentAppletId = FinAppClient.appletApiManager.getCurrentAppletId()
                 if (currentAppletId == null || currentAppletId.isEmpty()) {
                     appletHandlerCallback?.onFailure()
                 } else {
                     // 将小程序移至前台
-                    val activityName = FinAppClient.appletApiManager
-                        .getAppletActivityName(currentAppletId)
-                        ?.substringBefore("@") ?: ""
                     val context = contextRef.get()
-                    if (activityName.isNotEmpty() && context != null) {
-                        WeChatAppletProcessUtils.moveAppletProcessToFront(context, activityName)
+                    if (context != null) {
+                        WeChatAppletProcessUtils.moveAppletProcessToFront(context)
                         if (extraData.contains(":fail")) {
                             appletHandlerCallback?.onFailure()
                         } else {
@@ -138,7 +136,9 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                 }
                 appletHandlerCallback = null
             } else {
-                // 使用广播发送给小程序进程
+                // 当 appletHandlerCallback 为 null 时，说明是通过api调用的方法，
+                // 此时执行进程为小程序进程（或单进程模式下的主进程），
+                // 为了统一处理，使用广播发送给进程进行后续逻辑
                 contextRef.get()?.let {
                     val intent = Intent(WeChatPlugin.WECHAT_BROADCAST_ACTION)
                     intent.putExtra(WeChatPlugin.KEY_TYPE, resp.type)
