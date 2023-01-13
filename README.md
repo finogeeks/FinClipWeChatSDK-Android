@@ -45,3 +45,59 @@
 有没有**试过**，在自己的 APP 中引入一个 SDK ，应用中不仅可以打开小程序，还能自定义小程序接口，修改小程序样式，是不是觉得更不可思议？
 
 这就是 FinClip ，就是有这么多不可思议！
+
+## 使用说明
+
+在项目的`build.gradle`文件中（如`app/build.gradle`）添加您在微信开放平台申请的移动应用APPID：
+
+```groovy
+android {
+    // ..其它配置省略
+    defaultConfig {
+    // ..其它配置省略
+    resValue "string", "wechat_sdk_app_id", "您的微信开放平台移动应用下AppID"  
+    }
+}
+```
+
+> 这里填写的是移动应用下的AppID， 一般情况是wx开头，注意不是微信小程序的AppId，也不是微信小程序原始ID（gh开头），这些ID很容易搞混。
+
+由于WeChatSDK需要覆盖`IAppletHandler`中的`open-type`相关的方法，具体为`chooseAvatar`、`contact`、`feedback`、`getPhoneNumber`、`launchApp`、`shareAppMessage`六个方法。
+
+因此若您实现了`IAppletHandler`并实现了以上六个方法，WeChatSDK将会接管`getPhoneNumber`，剩余的五个方法请按以下方式迁移，若您未实现`IAppletHandler`或没有用到以上六个方法，可以忽略此处。
+
+1. 实现`IWeChatOpenTypeHandler`接口：
+
+   ```kotlin
+   class MyWeChatAppletOpenTypeHandler : IWeChatOpenTypeHandler {
+       override fun chooseAvatar(callback: IAppletHandler.IAppletCallback) {
+          // 您的实现逻辑
+       }
+   
+       override fun contact(json: JSONObject): Boolean {
+          // 您的实现逻辑
+       }
+   
+       override fun feedback(bundle: Bundle): Boolean {
+          // 您的实现逻辑
+       }
+   
+       override fun launchApp(appParameter: String?): Boolean {
+          // 您的实现逻辑
+       }
+   
+       override fun shareAppMessage(
+           appInfo: String,
+           bitmap: Bitmap?,
+           callback: IAppletHandler.IAppletCallback
+       ) {
+          // 您的实现逻辑
+       }
+   }
+   ```
+
+2. 在核心SDK初始化成功后，设置您的实现类。（注意，同核心SDK一样，务必保证是在主进程中设置）：
+
+   ```kotlin
+   WeChatOpenTypeClient.instance.iWeChatOpenTypeHandler = MyWeChatAppletOpenTypeHandler()
+   ```
