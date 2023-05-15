@@ -25,7 +25,7 @@ internal class WeChatOpenTypeHandler : IAppletOpenTypeHandler {
 
     override fun getPhoneNumber(callback: IAppletHandler.IAppletCallback) {
         val currentAppletId = FinAppClient.appletApiManager.getCurrentAppletId()
-        if (currentAppletId == null || currentAppletId.isEmpty()) {
+        if (currentAppletId.isNullOrEmpty()) {
             callback.onFailure()
             return
         }

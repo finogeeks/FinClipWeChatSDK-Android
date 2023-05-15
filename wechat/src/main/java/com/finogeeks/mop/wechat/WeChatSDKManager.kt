@@ -17,6 +17,7 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
+
 internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
 
     companion object {
@@ -58,7 +59,6 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
         req.userName = wechatLoginInfo.wechatOriginId
         req.path = wechatLoginInfo.profileUrl
         req.miniprogramType = appletType
-        req.extData
         iwxapi.sendReq(req)
     }
 
@@ -70,7 +70,6 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
         req.userName = wechatLoginInfo.wechatOriginId
         req.path = wechatLoginInfo.phoneUrl
         req.miniprogramType = appletType
-        req.extData
         iwxapi.sendReq(req)
     }
 
@@ -91,7 +90,20 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
         profileUrlSB.append("&timeStamp=${params.optString("timeStamp")}")
         req.path = profileUrlSB.toString()
         req.miniprogramType = appletType
-        req.extData
+        iwxapi.sendReq(req)
+    }
+
+    fun launchWXMiniProgram(
+        wxMiniProgramOriginId: String,
+        path: String,
+        envVersion: Int
+    ) {
+        val req = WXLaunchMiniProgram.Req()
+        req.userName = wxMiniProgramOriginId
+        if (path.isNotEmpty()) {
+            req.path = path
+        }
+        req.miniprogramType = envVersion
         iwxapi.sendReq(req)
     }
 
@@ -118,7 +130,7 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                 // 当 appletHandlerCallback 不为 null 时，说明是通过 button-type 调用的 getPhoneNumber，
                 // 此时执行进程为主进程，直接使用 appletHandlerCallback 进行回调
                 val currentAppletId = FinAppClient.appletApiManager.getCurrentAppletId()
-                if (currentAppletId == null || currentAppletId.isEmpty()) {
+                if (currentAppletId.isNullOrEmpty()) {
                     appletHandlerCallback?.onFailure()
                 } else {
                     // 将小程序移至前台
@@ -136,9 +148,10 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                 }
                 appletHandlerCallback = null
             } else {
-                // 当 appletHandlerCallback 为 null 时，说明是通过api调用的方法，
-                // 此时执行进程为小程序进程（或单进程模式下的主进程），
-                // 为了统一处理，使用广播发送给进程进行后续逻辑
+                // 以上条件未满足时，
+                // 说明调用的是 WeChatPlugin 内的 api 或 调用 getUserProfile，
+                // 此时由于微信拉起 WxEntryActivity 执行进程为主进程，而 callback 对象实例都在小程序进程内，
+                // 为了统一处理，使用广播发送进行后续回调逻辑
                 contextRef.get()?.let {
                     val intent = Intent(WeChatPlugin.WECHAT_BROADCAST_ACTION)
                     intent.putExtra(WeChatPlugin.KEY_TYPE, resp.type)

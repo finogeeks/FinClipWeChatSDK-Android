@@ -7,12 +7,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import com.finogeeks.lib.applet.api.AppletApi
 import com.finogeeks.lib.applet.api.apiFail
-import com.finogeeks.lib.applet.api.authDeny
 import com.finogeeks.lib.applet.interfaces.ICallback
 import com.finogeeks.lib.applet.main.FinAppHomeActivity
-import com.finogeeks.lib.applet.modules.applet_scope.AppletScopeManager
-import com.finogeeks.lib.applet.modules.applet_scope.ScopeRequest
-import com.finogeeks.lib.applet.modules.applet_scope.bean.AppletScopeBean
 import com.finogeeks.mop.wechat.BuildConfig
 import com.finogeeks.mop.wechat.WeChatSDKManager
 import com.finogeeks.mop.wechat.utils.WeChatAppletProcessUtils
@@ -73,8 +69,8 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
     override fun apis(): Array<String> {
         return arrayOf(
             API_WECHAT_LOGIN,
-            API_WECHAT_GET_USER_PROFILE,
-            API_WECHAT_REQUEST_PAYMENT
+            API_WECHAT_REQUEST_PAYMENT,
+            API_WECHAT_MINI_PROGRAM
         )
     }
 
@@ -87,64 +83,67 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
             else -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
         }
         val wechatLoginInfo = finAppInfo.wechatLoginInfo
-        if (wechatLoginInfo == null) {
-            callback.onFail()
-            return
-        }
+        currentEvent = event
+        currentCallback = callback
+        weChatSDKManager.appletHandlerCallback = null
         when (event) {
             API_WECHAT_LOGIN -> {
-                if (wechatLoginInfo.wechatOriginId.isEmpty() || wechatLoginInfo.profileUrl.isEmpty()) {
+                if (wechatLoginInfo == null) {
                     callback.onFail(apiFail(event))
                     return
                 }
-                currentEvent = event
-                currentCallback = callback
+                if (wechatLoginInfo.wechatOriginId.isEmpty()) {
+                    callback.onFail(apiFail(event, "originId not exist"))
+                    return
+                }
+                if (wechatLoginInfo.profileUrl.isEmpty()) {
+                    callback.onFail(apiFail(event, "path not exist"))
+                    return
+                }
                 weChatSDKManager.launchGetProfileWxMiniProgram(
                     appletType,
                     activity.mFinAppInfo.wechatLoginInfo
                 )
             }
-            API_WECHAT_GET_USER_PROFILE -> {
-                val scopeRequest = ScopeRequest()
-                scopeRequest.addScope(AppletScopeBean.SCOPE_USERINFO)
-                scopeRequest.alwaysRequest = true
-                val scopeManager = AppletScopeManager(context, appId)
-                scopeManager.requestScope(scopeRequest) { allow ->
-                    if (allow) {
-                        if (wechatLoginInfo.wechatOriginId.isEmpty() || wechatLoginInfo.profileUrl.isEmpty()) {
-                            callback.onFail(apiFail(event))
-                            return@requestScope
-                        }
-                        currentEvent = event
-                        currentCallback = callback
-                        weChatSDKManager.launchGetProfileWxMiniProgram(
-                            appletType,
-                            activity.mFinAppInfo.wechatLoginInfo
-                        )
-                    } else {
-                        callback.authDeny(event)
-                    }
-                }
 
-            }
             API_WECHAT_REQUEST_PAYMENT -> {
-                if (wechatLoginInfo.wechatOriginId.isEmpty() || wechatLoginInfo.paymentUrl.isEmpty()) {
+                if (wechatLoginInfo == null) {
                     callback.onFail(apiFail(event))
                     return
                 }
-                currentEvent = event
-                currentCallback = callback
+                if (wechatLoginInfo.wechatOriginId.isEmpty()) {
+                    callback.onFail(apiFail(event, "originId not exist"))
+                    return
+                }
+                if (wechatLoginInfo.paymentUrl.isEmpty()) {
+                    callback.onFail(apiFail(event, "path not exist"))
+                    return
+                }
                 weChatSDKManager.launchRequestPaymentWxMiniProgram(
                     appletType,
                     activity.mFinAppInfo.wechatLoginInfo,
                     param
                 )
             }
+
+            API_WECHAT_MINI_PROGRAM -> {
+                val wxMiniProgramOriginId = param.optString("originId")
+                if (wxMiniProgramOriginId.isEmpty()) {
+                    callback.onFail(apiFail(event, "originId not exist"))
+                    return
+                }
+                val envVersion = when (param.optString("envVersion")) {
+                    "develop" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
+                    "trial" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_PREVIEW
+                    else -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE
+                }
+                var path = param.optString("path")
+                if (path == "null") {
+                    path = ""
+                }
+                weChatSDKManager.launchWXMiniProgram(wxMiniProgramOriginId, path, envVersion)
+            }
         }
-    }
-
-    override fun invoke(event: String, param: JSONObject, callback: ICallback) {
-
     }
 
     /**
@@ -158,7 +157,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
         } else {
             if (type == ConstantsAPI.COMMAND_LAUNCH_WX_MINIPROGRAM) {
                 val extraData: String? = intent.getStringExtra(KEY_EXTRA_DATA)
-                if (extraData != null && extraData.isNotEmpty()) {
+                if (!extraData.isNullOrEmpty()) {
                     if (extraData.contains(":fail")) {
                         // 失败的extraData里已为完整的失败信息json，直接回调fail即可
                         callback.onFail(JSONObject(extraData))
@@ -174,8 +173,8 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
 
     companion object {
         private const val API_WECHAT_LOGIN = "login"
-        private const val API_WECHAT_GET_USER_PROFILE = "getUserProfile"
         private const val API_WECHAT_REQUEST_PAYMENT = "requestPayment"
+        private const val API_WECHAT_MINI_PROGRAM = "navigateToWechatMiniProgram"
 
         const val WECHAT_BROADCAST_ACTION = BuildConfig.LIBRARY_PACKAGE_NAME
         const val KEY_TYPE = "type"
