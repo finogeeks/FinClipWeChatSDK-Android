@@ -48,7 +48,8 @@ internal class WeChatOpenTypeHandler : IAppletOpenTypeHandler {
             "release" -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE
             else -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
         }
-        WeChatSDKManager.instance.appletHandlerCallback = callback
+        WeChatSDKManager.instance.getUserProfileCallback = null
+        WeChatSDKManager.instance.getPhoneNumberCallback = callback
         WeChatSDKManager.instance.launchGetPhoneNumberWxMiniProgram(
             appletType,
             wechatLoginInfo

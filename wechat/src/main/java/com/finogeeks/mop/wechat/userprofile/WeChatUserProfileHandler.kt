@@ -3,8 +3,10 @@ package com.finogeeks.mop.wechat.userprofile
 import android.content.Context
 import com.finogeeks.lib.applet.client.FinAppInfo
 import com.finogeeks.lib.applet.modules.userprofile.IUserProfileHandler
+import com.finogeeks.lib.applet.sdk.api.IAppletHandler
 import com.finogeeks.mop.wechat.WeChatSDKManager
 import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
+import org.json.JSONObject
 
 class WeChatUserProfileHandler : IUserProfileHandler {
 
@@ -14,7 +16,8 @@ class WeChatUserProfileHandler : IUserProfileHandler {
         callback: IUserProfileHandler.UserProfileCallback
     ) {
         WeChatSDKManager.instance.init(context)
-        WeChatSDKManager.instance.appletHandlerCallback = null
+        WeChatSDKManager.instance.getPhoneNumberCallback = null
+        WeChatSDKManager.instance.getUserProfileCallback = callback
         val appletType = when (finAppInfo.appType) {
             "trial" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_PREVIEW
             "release" -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE

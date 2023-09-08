@@ -39,25 +39,6 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
      */
     private var currentEvent: String? = null
 
-    init {
-        /**
-         * 在小程序进程中接收主进程的微信回调广播处理后续逻辑
-         */
-        broadcastReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                currentCallback?.let { callback ->
-                    currentEvent?.let { event ->
-                        WeChatAppletProcessUtils.moveAppletProcessToFront(activity)
-                        handleIntentResult(event, callback, intent)
-                        currentCallback = null
-                        currentEvent = null
-                    }
-                }
-            }
-        }
-        activity.registerReceiver(broadcastReceiver, IntentFilter(WECHAT_BROADCAST_ACTION))
-    }
-
     override fun onDestroy() {
         broadcastReceiver?.let {
             (context as? Activity)?.unregisterReceiver(it)
@@ -75,6 +56,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
     }
 
     override fun invoke(appId: String, event: String, param: JSONObject, callback: ICallback) {
+        registerBroadcastReceiver()
         val activity = context as FinAppHomeActivity
         val finAppInfo = activity.mFinAppInfo
         val appletType = when (finAppInfo.appType) {
@@ -85,7 +67,8 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
         val wechatLoginInfo = finAppInfo.wechatLoginInfo
         currentEvent = event
         currentCallback = callback
-        weChatSDKManager.appletHandlerCallback = null
+        weChatSDKManager.getPhoneNumberCallback = null
+        weChatSDKManager.getUserProfileCallback = null
         when (event) {
             API_WECHAT_LOGIN -> {
                 if (wechatLoginInfo == null) {
@@ -143,6 +126,29 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
                 }
                 weChatSDKManager.launchWXMiniProgram(wxMiniProgramOriginId, path, envVersion)
             }
+        }
+    }
+
+    /**
+     * 在小程序进程中接收主进程的微信回调广播处理后续逻辑
+     */
+    private fun registerBroadcastReceiver() {
+        if (broadcastReceiver != null) {
+            return
+        }
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(mContext: Context, intent: Intent) {
+                currentCallback?.let { callback ->
+                    currentEvent?.let { event ->
+                        WeChatAppletProcessUtils.moveAppletProcessToFront(context)
+                        handleIntentResult(event, callback, intent)
+                        currentCallback = null
+                        currentEvent = null
+                    }
+                }
+            }
+        }.also {
+            (context as? Activity)?.registerReceiver(it, IntentFilter(WECHAT_BROADCAST_ACTION))
         }
     }
 
