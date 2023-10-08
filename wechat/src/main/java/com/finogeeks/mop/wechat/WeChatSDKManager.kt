@@ -3,6 +3,7 @@ package com.finogeeks.mop.wechat
 import android.content.Context
 import android.content.Intent
 import com.finogeeks.lib.applet.client.FinAppClient
+import com.finogeeks.lib.applet.modules.common.broadcastPermission
 import com.finogeeks.lib.applet.modules.userprofile.IUserProfileHandler
 import com.finogeeks.lib.applet.rest.model.WechatLoginInfo
 import com.finogeeks.lib.applet.sdk.api.IAppletHandler
@@ -123,6 +124,9 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
 
     }
 
+    /**
+     * 将小程序移至前台并回调结果
+     */
     private fun callbackOnMainProcess(
         extraData: String,
         onSuccess: (result: JSONObject) -> Unit,
@@ -133,7 +137,6 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
             onFail()
             return
         }
-        // 将小程序移至前台并回调结果
         val context = contextRef.get()
         if (context != null) {
             WeChatAppletProcessUtils.moveAppletProcessToFront(context)
@@ -157,7 +160,7 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
             val extraData = launchMiniProResp.extMsg
             if (getPhoneNumberCallback != null) {
                 // 当 getPhoneNumberCallback 不为 null 时，
-                // 说明是通过调用的是 getPhoneNumber
+                // 说明此时调用的是 getPhoneNumber
                 // 此时调用进程和回调进程均为主进程，直接使用 getPhoneNumberCallback 进行回调
                 callbackOnMainProcess(
                     extraData = extraData,
@@ -195,7 +198,7 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                     if (extraData.isNotEmpty()) {
                         intent.putExtra(WeChatPlugin.KEY_EXTRA_DATA, extraData)
                     }
-                    it.sendBroadcast(intent)
+                    it.sendBroadcast(intent, it.broadcastPermission())
                 }
             }
 

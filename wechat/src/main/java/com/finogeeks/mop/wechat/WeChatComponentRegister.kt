@@ -5,6 +5,9 @@ import com.finogeeks.lib.applet.sdk.api.AbsComponentRegister
 import com.finogeeks.mop.wechat.open_type_handler.WeChatOpenTypeHandler
 import com.finogeeks.mop.wechat.userprofile.WeChatUserProfileHandler
 
+/**
+ * 在核心SDK内通过反射进行实例化，不要删
+ */
 internal class WeChatComponentRegister : AbsComponentRegister() {
 
     override fun onComponentRegister(param: ComponentRegisterParam) {

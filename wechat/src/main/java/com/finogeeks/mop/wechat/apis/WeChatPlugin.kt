@@ -1,5 +1,6 @@
 package com.finogeeks.mop.wechat.apis
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,6 +10,7 @@ import com.finogeeks.lib.applet.api.AppletApi
 import com.finogeeks.lib.applet.api.apiFail
 import com.finogeeks.lib.applet.interfaces.ICallback
 import com.finogeeks.lib.applet.main.FinAppHomeActivity
+import com.finogeeks.lib.applet.modules.common.broadcastPermission
 import com.finogeeks.mop.wechat.BuildConfig
 import com.finogeeks.mop.wechat.WeChatSDKManager
 import com.finogeeks.mop.wechat.utils.WeChatAppletProcessUtils
@@ -132,6 +134,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
     /**
      * 在小程序进程中接收主进程的微信回调广播处理后续逻辑
      */
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun registerBroadcastReceiver() {
         if (broadcastReceiver != null) {
             return
@@ -148,7 +151,12 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
                 }
             }
         }.also {
-            (context as? Activity)?.registerReceiver(it, IntentFilter(WECHAT_BROADCAST_ACTION))
+            (context as? Activity)?.registerReceiver(
+                /* receiver = */ it,
+                /* filter = */ IntentFilter(WECHAT_BROADCAST_ACTION),
+                /* broadcastPermission = */ context.broadcastPermission(),
+                /* scheduler = */ null
+            )
         }
     }
 
