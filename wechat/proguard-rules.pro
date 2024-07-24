@@ -24,6 +24,6 @@
 -keepattributes SourceFile,LineNumberTable
 -keep public class com.finogeeks.mop.wechat.apis.** implements com.finogeeks.lib.applet.interfaces.IApi {
     public <init>();
-    public <init>(android.content.Context);
-    public <init>(android.app.Activity);
+    public <init>(com.finogeeks.lib.applet.main.host.Host);
 }
+-keep public class com.finogeeks.mop.wechat.FinWeChatSDK{*;}

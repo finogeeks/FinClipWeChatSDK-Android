@@ -9,11 +9,11 @@ import android.content.IntentFilter
 import com.finogeeks.lib.applet.api.AppletApi
 import com.finogeeks.lib.applet.api.apiFail
 import com.finogeeks.lib.applet.interfaces.ICallback
-import com.finogeeks.lib.applet.main.FinAppHomeActivity
+import com.finogeeks.lib.applet.main.host.Host
 import com.finogeeks.lib.applet.modules.common.broadcastPermission
+import com.finogeeks.lib.applet.modules.ext.registerReceiverCompat
 import com.finogeeks.mop.wechat.BuildConfig
 import com.finogeeks.mop.wechat.WeChatSDKManager
-import com.finogeeks.mop.wechat.utils.WeChatAppletProcessUtils
 import com.tencent.mm.opensdk.constants.ConstantsAPI
 import com.tencent.mm.opensdk.modelbase.BaseResp
 import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
@@ -22,10 +22,10 @@ import org.json.JSONObject
 /**
  * 微信相关API
  */
-class WeChatPlugin(activity: Activity) : AppletApi(activity) {
+class WeChatPlugin(private val host: Host) : AppletApi(host.activity) {
 
     private val weChatSDKManager by lazy {
-        WeChatSDKManager.instance.init(activity)
+        WeChatSDKManager.instance.init(host.activity)
         WeChatSDKManager.instance
     }
 
@@ -59,8 +59,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
 
     override fun invoke(appId: String, event: String, param: JSONObject, callback: ICallback) {
         registerBroadcastReceiver()
-        val activity = context as FinAppHomeActivity
-        val finAppInfo = activity.mFinAppInfo
+        val finAppInfo = host.finAppInfo
         val appletType = when (finAppInfo.appType) {
             "trial" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_PREVIEW
             "release" -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE
@@ -87,7 +86,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
                 }
                 weChatSDKManager.launchGetProfileWxMiniProgram(
                     appletType,
-                    activity.mFinAppInfo.wechatLoginInfo
+                    finAppInfo.wechatLoginInfo
                 )
             }
 
@@ -106,7 +105,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
                 }
                 weChatSDKManager.launchRequestPaymentWxMiniProgram(
                     appletType,
-                    activity.mFinAppInfo.wechatLoginInfo,
+                    finAppInfo.wechatLoginInfo,
                     param
                 )
             }
@@ -143,7 +142,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
             override fun onReceive(mContext: Context, intent: Intent) {
                 currentCallback?.let { callback ->
                     currentEvent?.let { event ->
-                        WeChatAppletProcessUtils.moveAppletProcessToFront(context)
+                        host.moveTaskToFront()
                         handleIntentResult(event, callback, intent)
                         currentCallback = null
                         currentEvent = null
@@ -151,7 +150,7 @@ class WeChatPlugin(activity: Activity) : AppletApi(activity) {
                 }
             }
         }.also {
-            (context as? Activity)?.registerReceiver(
+            (context as? Activity)?.registerReceiverCompat(
                 /* receiver = */ it,
                 /* filter = */ IntentFilter(WECHAT_BROADCAST_ACTION),
                 /* broadcastPermission = */ context.broadcastPermission(),

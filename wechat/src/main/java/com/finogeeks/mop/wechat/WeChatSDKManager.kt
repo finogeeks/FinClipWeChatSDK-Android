@@ -8,7 +8,6 @@ import com.finogeeks.lib.applet.modules.userprofile.IUserProfileHandler
 import com.finogeeks.lib.applet.rest.model.WechatLoginInfo
 import com.finogeeks.lib.applet.sdk.api.IAppletHandler
 import com.finogeeks.mop.wechat.apis.WeChatPlugin
-import com.finogeeks.mop.wechat.utils.WeChatAppletProcessUtils
 import com.tencent.mm.opensdk.constants.ConstantsAPI
 import com.tencent.mm.opensdk.modelbase.BaseReq
 import com.tencent.mm.opensdk.modelbase.BaseResp
@@ -139,7 +138,7 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
         }
         val context = contextRef.get()
         if (context != null) {
-            WeChatAppletProcessUtils.moveAppletProcessToFront(context)
+            FinAppClient.appletApiManager.moveTaskToFront(currentAppletId)
             if (extraData.contains(":fail")) {
                 onFail()
             } else {
