@@ -6,7 +6,7 @@ import com.finogeeks.lib.applet.sdk.api.IAppletHandler
 import org.json.JSONObject
 
 /**
- * 用于提供给宿主app处理除了 getPhoneNumber 之外的其它 open-type 方法
+ * 用于提供给宿主app处理open-type 方法
  */
 interface IWeChatOpenTypeHandler {
 
@@ -14,6 +14,11 @@ interface IWeChatOpenTypeHandler {
      * 选择头像
      */
     fun chooseAvatar(callback: IAppletHandler.IAppletCallback)
+
+    /**
+     * 获取手机号
+     */
+    fun getPhoneNumber(callback: IAppletHandler.IAppletCallback): Boolean
 
     /**
      * 从小程序返回到主app

@@ -3,10 +3,8 @@ package com.finogeeks.mop.wechat.userprofile
 import android.content.Context
 import com.finogeeks.lib.applet.client.FinAppInfo
 import com.finogeeks.lib.applet.modules.userprofile.IUserProfileHandler
-import com.finogeeks.lib.applet.sdk.api.IAppletHandler
 import com.finogeeks.mop.wechat.WeChatSDKManager
 import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
-import org.json.JSONObject
 
 class WeChatUserProfileHandler : IUserProfileHandler {
 
@@ -34,6 +32,10 @@ class WeChatUserProfileHandler : IUserProfileHandler {
         }
         if (wechatLoginInfo.profileUrl.isEmpty()) {
             callback.onError("path not exist")
+            return
+        }
+        if (!WeChatSDKManager.instance.isWXAppInstalled()) {
+            callback.onError("WeChat app is not installed")
             return
         }
         WeChatSDKManager.instance.launchGetProfileWxMiniProgram(

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import com.finogeeks.lib.applet.api.AppletApi
 import com.finogeeks.lib.applet.api.apiFail
+import com.finogeeks.lib.applet.client.FinAppInfo
 import com.finogeeks.lib.applet.interfaces.ICallback
 import com.finogeeks.lib.applet.main.host.Host
 import com.finogeeks.lib.applet.modules.common.broadcastPermission
@@ -58,12 +59,19 @@ class WeChatPlugin(private val host: Host) : AppletApi(host.activity) {
     }
 
     override fun invoke(appId: String, event: String, param: JSONObject, callback: ICallback) {
+
+        if (!weChatSDKManager.isWXAppInstalled()) {
+            callback.onFail(apiFail(event, "WeChat app is not installed"))
+            return
+        }
+
         registerBroadcastReceiver()
         val finAppInfo = host.finAppInfo
-        val appletType = when (finAppInfo.appType) {
+        val envVersion = when (param.optString("envVersion")) {
+            "develop" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
             "trial" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_PREVIEW
             "release" -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE
-            else -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
+            else -> getWechatEnvVersion(finAppInfo)
         }
         val wechatLoginInfo = finAppInfo.wechatLoginInfo
         currentEvent = event
@@ -85,7 +93,7 @@ class WeChatPlugin(private val host: Host) : AppletApi(host.activity) {
                     return
                 }
                 weChatSDKManager.launchGetProfileWxMiniProgram(
-                    appletType,
+                    envVersion,
                     finAppInfo.wechatLoginInfo
                 )
             }
@@ -104,7 +112,7 @@ class WeChatPlugin(private val host: Host) : AppletApi(host.activity) {
                     return
                 }
                 weChatSDKManager.launchRequestPaymentWxMiniProgram(
-                    appletType,
+                    envVersion,
                     finAppInfo.wechatLoginInfo,
                     param
                 )
@@ -128,6 +136,16 @@ class WeChatPlugin(private val host: Host) : AppletApi(host.activity) {
                 weChatSDKManager.launchWXMiniProgram(wxMiniProgramOriginId, path, envVersion)
             }
         }
+    }
+
+    private fun getWechatEnvVersion(finAppInfo: FinAppInfo) : Int {
+        val envVersion = when (finAppInfo.appType) {
+            "trial" -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_PREVIEW
+            "release" -> WXLaunchMiniProgram.Req.MINIPTOGRAM_TYPE_RELEASE
+            else -> WXLaunchMiniProgram.Req.MINIPROGRAM_TYPE_TEST
+        }
+
+        return envVersion
     }
 
     /**

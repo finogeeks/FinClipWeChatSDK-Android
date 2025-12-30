@@ -2,8 +2,10 @@ package com.finogeeks.mop.wechat
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.finogeeks.lib.applet.client.FinAppClient
 import com.finogeeks.lib.applet.modules.common.broadcastPermission
+import com.finogeeks.lib.applet.modules.log.FLog
 import com.finogeeks.lib.applet.modules.userprofile.IUserProfileHandler
 import com.finogeeks.lib.applet.rest.model.WechatLoginInfo
 import com.finogeeks.lib.applet.sdk.api.IAppletHandler
@@ -27,6 +29,8 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
             WeChatSDKManager()
         }
     }
+
+    private var TAG = "WeChatSDKManager"
 
     private var isInit = false
     private lateinit var iwxapi: IWXAPI
@@ -54,6 +58,14 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
         )
         iwxapi.registerApp(context.resources.getString(R.string.wechat_sdk_app_id))
         isInit = true
+    }
+
+    fun isWXAppInstalled(): Boolean {
+        if (!isInit) {
+            FLog.e(TAG, "WeChatSDKManager is not initialized")
+            return false
+        }
+        return iwxapi.isWXAppInstalled
     }
 
     fun launchGetProfileWxMiniProgram(
@@ -154,10 +166,14 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
      */
     override fun onResp(resp: BaseResp) {
         // 该SDK目前仅处理启动微信小程序后的回调
+        FLog.d(TAG, "onResp did invoke")
         if (resp.type == ConstantsAPI.COMMAND_LAUNCH_WX_MINIPROGRAM) {
             val launchMiniProResp = resp as WXLaunchMiniProgram.Resp
             val extraData = launchMiniProResp.extMsg
-            if (getPhoneNumberCallback != null) {
+            val phoneNumberCallbackExist = (getPhoneNumberCallback != null)
+            val getUserProfileCallbackExist = (getUserProfileCallback != null)
+            FLog.i(TAG, "WXLaunchMiniProgram--phoneNumberCallbackExist:$phoneNumberCallbackExist, getUserProfileCallbackExist:$getUserProfileCallbackExist, extMsg: $extraData")
+            if (phoneNumberCallbackExist) {
                 // 当 getPhoneNumberCallback 不为 null 时，
                 // 说明此时调用的是 getPhoneNumber
                 // 此时调用进程和回调进程均为主进程，直接使用 getPhoneNumberCallback 进行回调
@@ -171,7 +187,7 @@ internal class WeChatSDKManager private constructor() : IWXAPIEventHandler {
                     }
                 )
                 getPhoneNumberCallback = null
-            } else if (getUserProfileCallback != null) {
+            } else if (getUserProfileCallbackExist) {
                 // 当 getUserProfileCallback 不为 null 时，
                 // 说明此时调用的是 getUserProfile，
                 // 此时调用进程和回调进程均为主进程，直接使用 getUserProfileCallback 进行回调
